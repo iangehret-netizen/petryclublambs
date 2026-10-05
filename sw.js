@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "petry-app-";
-const CACHE_NAME = CACHE_PREFIX + "v5";
+const CACHE_NAME = CACHE_PREFIX + "v7";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
