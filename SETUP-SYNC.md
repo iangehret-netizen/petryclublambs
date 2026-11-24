@@ -16,17 +16,7 @@ To make every device share the same data, connect it to a free Firebase project 
 
 ## 3. Turn on the database
 1. Left menu → **Build → Firestore Database → Create database** → pick a US location → start in **production mode**.
-2. Open the **Rules** tab, replace everything with this, then **Publish**:
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /petry_sync/{doc} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
+2. Open the **Rules** tab, replace everything with the contents of `firestore.rules` (in this repo), then **Publish**.
 
 ## 4. Get the web config
 1. Project Overview (gear icon) → **Project settings** → scroll to **Your apps** → click the **</>** (Web) icon.
