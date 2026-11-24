@@ -1683,19 +1683,24 @@ function gxDupFind(){var recs=gxDupRecs(),by={};
 function gxDupGo(r){var g=r.go||{};if(g.view==="otherfarms"){gxOfPick(g.farm);gxS.vals["gx:oftab"]=g.tab||"roster";if(g.year)gxS.vals["gx:ofyr"]=g.year;if(g.sale)gxS.vals["gx:ofsale"]=g.sale}
   try{window.dispatchEvent(new CustomEvent("gx-go",{detail:{view:g.view,year:g.year&&g.view==="showbarn"?g.year:null,tab:g.view==="otherfarms"?null:g.tab}}))}catch(e){}
   try{window.scrollTo(0,0)}catch(e){}}
+/* ---- v72 (Wallen v20): Check for Repeats = same tag twice in one tab with a different sire or dam ---- */
+function gxRepTab(l){var p=String(l||"").split("|");if(p[1]==="sale")return p[0]+"|sales";if(p[1]==="babies")return p[0]+"|babies";return l}
+function gxRepeatFind(){var recs=gxDupRecs(),by={},bucks=gxBucks();
+  recs.forEach(function(r){var t=gxRepTab(r.list),seen={};r.keys.forEach(function(k){var n=gxNorm(k);if(!n||seen[n])return;seen[n]=1;var key=t+"\u0001"+n;(by[key]=by[key]||{tag:String(k).trim(),recs:[]}).recs.push(r)})});
+  var out=[],sig={};Object.keys(by).forEach(function(k){var g=by[k].recs;if(g.length<2)return;
+    var bad=g.some(function(a){return g.some(function(b){if(a===b)return!1;var s1=gxSireKey(a.sire),s2=gxSireKey(b.sire),d1=gxNorm(a.dam),d2=gxNorm(b.dam);return(s1&&s2&&!gxSameSire(a.sire,b.sire,bucks))||(d1&&d2&&d1!==d2)})});
+    var key=g.map(function(r){return r.id}).sort().join(",");if(!bad||sig[key])return;sig[key]=1;out.push({tag:by[k].tag,where:g[0].where,recs:g})});
+  return{conflict:out.sort(function(a,b){return ofCmp(a.where,b.where)||ofCmp(a.tag,b.tag)})}}
 function GxDupCard(){var st=ge.useState(null),res=st[0],setRes=st[1];
   function grp(title,note,list){return gxE("div",{className:"mb-4"},gxE("div",{className:"gx-sub text-[11px] uppercase tracking-wider mb-1",style:{color:Qe,fontWeight:700}},title+" ("+list.length+")"),gxE("div",{className:"text-[11px] text-neutral-500 mb-2"},note),
     list.length===0?gxE("div",{className:"text-xs text-neutral-400"},"None found."):gxE("div",{className:"space-y-2"},list.map(function(g,gi){return gxE("div",{key:gi,style:{background:$t,borderRadius:"10px",padding:8}},
-      gxE("div",{className:"text-sm mb-1",style:{color:Ge,fontWeight:700}},"Tag "+g.tag),
+      gxE("div",{className:"text-sm mb-1",style:{color:Ge,fontWeight:700}},"Tag "+g.tag+(g.where?" · "+g.where.split(" · ").slice(0,2).join(" · "):"")+" ("+g.recs.length+")"),
       g.recs.map(function(r,i){return gxE("button",{key:i,type:"button",onClick:function(){gxDupGo(r)},className:"w-full text-left text-xs py-1 px-2 mb-1 flex justify-between gap-2",style:{background:"#FFFFFF",border:"1px solid "+He,borderRadius:"8px",color:"#444"}},
         gxE("span",null,gxE("b",null,r.kind+(r.label&&gxNorm(r.label)!==gxNorm(g.tag)?" "+r.label:"")),gxE("span",{className:"block text-[11px] text-neutral-500"},r.where)),gxE("span",{style:{color:"#777",textAlign:"right"}},[r.sire&&"Sire "+r.sire,r.dam&&"Dam "+r.dam].filter(Boolean).join(" · ")||"—"))}))})))}
-  return gxE(Gn,{style:{marginTop:16}},gxE(mn,null,"Check for Duplicates"),
-    gxNote("Looks through Show Lambs (every year), Herd View (Roster, Bucks, Sold / Removed, Lambing Records) and every Other Farm (Roster, Sales, Ewes, Bucks) for tags that show up more than once. Nothing is changed or deleted — tap any line to go fix it yourself. A sale lot and the Roster copy it made, or a lamb sent from Lambing Records to Show Lambs, count as one."),
-    gxE(tt,{onClick:function(){setRes(gxDupFind())}},res?"Check Again":"Check for Duplicates"),
-    res?gxE("div",{style:{marginTop:16}},
-      grp("Same tag twice in one list","The same tag entered more than once in the same tab, year or sale.",res.same),
-      grp("Same tag, different sire or dam","These disagree with each other — one of them is probably a typo.",res.conflict),
-      grp("Same tag, sire and dam in more than one place","Often the same sheep on purpose (e.g. a lamb in Lambing Records that became a ewe on the Roster, or a lamb you bought that is also in Other Farms).",res.exact)):null)}
+  return gxE(Gn,{style:{marginTop:16}},gxE(mn,null,"Check for Repeats"),
+    gxNote("Finds the same tag entered twice in one tab with a different sire or dam — for example two lambs in the same Show Lambs year both tagged 26050 but out of different ewes. Looks through Show Lambs (every year), Herd View and every Other Farm. Nothing is changed or deleted; tap a line to go fix it."),
+    gxE(tt,{onClick:function(){setRes(gxRepeatFind())}},res?"Check Again":"Check for Repeats"),
+    res?gxE("div",{style:{marginTop:16}},res.conflict.length===0?gxE("div",{className:"text-sm",style:{color:"#2E7D32",fontWeight:600}},"✓ No tags with mismatched sire or dam."):grp("Same tag, different sire or dam","Inside one tab — one of them is probably a typo.",res.conflict)):null)}
 
 /* ===================== v68: sibs that match loosely + sib list, search, breed sub-tabs, nickname, Bucks, ewe birth-year groups, hide/delete tabs ===================== */
 GXK.bucks="sheepwrld:bucks";GXK.tabvis="sheepwrld:tabvis";
