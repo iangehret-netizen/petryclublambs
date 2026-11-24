@@ -1,4 +1,4 @@
-const CACHE_NAME = "petry-app-v72";
+const CACHE_NAME = "petry-app-v73";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

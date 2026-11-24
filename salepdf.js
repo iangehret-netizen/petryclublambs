@@ -402,7 +402,7 @@
       if (rawDob && /^(early|mid|middle|late|end of)/i.test(rawDob)) note.push("DOB: " + rawDob + " (approx.)");
       if (o.damTag) {
         var dm = /^([A-Za-z]{0,3}\d[\w\-\/]*)\b\s*(.*)$/.exec(o.damTag);
-        if (!dm) { note.push("Dam: " + o.damTag); o.damTag = ""; }
+        if (!dm) { if (/^(no|to|not|un)\s*tag|^unknown|^n\/?a$|^-+$/i.test(o.damTag.trim())) { note.push("Dam: " + o.damTag); o.damTag = ""; } }
         else if (dm[2]) { note.push("Dam: " + o.damTag); o.damTag = dm[1]; }
       }
       if (note.length) o.comments = o.comments ? o.comments + "\n" + note.join("\n") : note.join("\n");
